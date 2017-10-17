@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "564359430412",
+    "firebase_url": "https://soatp-2dfc9.firebaseio.com",
+    "project_id": "soatp-2dfc9",
+    "storage_bucket": "soatp-2dfc9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:564359430412:android:71101b3e8abf5958",
+        "android_client_info": {
+          "package_name": "com.soa.javier.soatp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "564359430412-rgcql3iq2cn5l7k0jn09o2kpl5rb0ud3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.soa.javier.soatp",
+            "certificate_hash": "e431acac847bb28fe8cffce6e1b436d88a8db572"
+          }
+        },
+        {
+          "client_id": "564359430412-fmfk9j7mnrcs3a1h3v35l3hv1djnqp9r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYAJx42lzMWITsEDDMM-lZUgk1P5l58-4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "564359430412-fmfk9j7mnrcs3a1h3v35l3hv1djnqp9r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
