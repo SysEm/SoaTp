@@ -32,13 +32,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference baseDatosSoaRef = database.getReference("baseDatosSoa").child("Puerta");
+//    DatabaseReference baseDatosSoaRef = database.getReference("baseDatosSoa").child("Puerta");
+    DatabaseReference baseDatosSoaRef = database.getReference("baseDatosSoa").child("puertas").child("Puerta Martin");
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        puerta.setPuerta("off","off",0f,0f);
 
         tView = (TextView)findViewById(R.id.tview);
         tView2 = (TextView)findViewById(R.id.tview2);
@@ -55,26 +58,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onStart() {
         super.onStart();
 
-        baseDatosSoaRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                //Puerta puerta = dataSnapshot.getValue(Puerta.class);
-                String estadoLed = dataSnapshot.child("Led").child("estado").getValue().toString();
-                String estadoPresencia = dataSnapshot.child("Presencia").child("estado").getValue().toString();
-                Float anguloServo = Float.parseFloat(dataSnapshot.child("Servo").child("angulo").getValue().toString());
-                Float esfuerzoServo = Float.parseFloat(dataSnapshot.child("Servo").child("esfuerzo").getValue().toString());
+        if (baseDatosSoaRef != null) {
+            baseDatosSoaRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    //Puerta puerta = dataSnapshot.getValue(Puerta.class);
+                    try {
+                        String estadoLed = dataSnapshot.child("led").child("estado").getValue().toString();
+                        String estadoPresencia = dataSnapshot.child("presencia").child("estado").getValue().toString();
+                        Float anguloServo = Float.parseFloat(dataSnapshot.child("servo").child("angulo").getValue().toString());
+                        Float esfuerzoServo = Float.parseFloat(dataSnapshot.child("servo").child("esfuerzo").getValue().toString());
 
-                puerta.setPuerta(estadoLed,estadoPresencia,anguloServo,esfuerzoServo);
-                String txt1 = puerta.getLed().getEstado();
-                tView.setText(txt1);
-            }
+                        puerta.setPuerta(estadoLed, estadoPresencia, anguloServo, esfuerzoServo);
+                        String txt1 = puerta.getLed().getEstado();
+                        tView.setText(txt1);
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                    }catch (NullPointerException e){
+                        // error, seguramente nombre de campos incorrectos devuelven objeto NULO
+                        tView.setText("Error obteniendo datos BBDD");
+                    }
 
-            }
-        });
+                    //              puerta.setId("martin");
+                    //              database.getReference("baseDatosSoa").child("puertas").child("Puerta Martin").setValue(puerta);
+                    //              puerta.setId("jorge");
+                    //              database.getReference("baseDatosSoa").child("puertas").child("Puerta Jorge").setValue(puerta);
+                }
 
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
     @Override
@@ -84,13 +99,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tView2.setText(Float.toString(valor));
         String estado;
         if(valor == 1){
-            if(puerta.getLed().getEstado().equals("on")){
+            if (puerta.getLed().getEstado().equals("on"))
                 estado = "off";
-                baseDatosSoaRef.child("Led").child("estado").setValue(estado);
-            }else {
+            else
                 estado = "on";
-                baseDatosSoaRef.child("Led").child("estado").setValue(estado);
-            }
+
+            puerta.getLed().setEstado(estado);
+            if (baseDatosSoaRef != null)
+                baseDatosSoaRef.child("led").child("estado").setValue(estado);
 
         }
     }
