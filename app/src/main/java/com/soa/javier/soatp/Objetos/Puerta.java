@@ -18,7 +18,7 @@ public class Puerta {
         this.servo = new Servo();
     }
 
-    public void setPuerta(String estLed,String estPresen,Float angServo,Float esfServo){
+    public void setPuerta(String estLed, String estPresen, Integer angServo, Integer esfServo){
         this.led.setEstado(estLed);
         this.presencia.setEstado(estPresen);
         this.servo.setAngulo(angServo);

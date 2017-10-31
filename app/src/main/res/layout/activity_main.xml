@@ -6,22 +6,172 @@
     android:layout_height="match_parent"
     tools:context="com.soa.javier.soatp.MainActivity">
 
-    <TextView
-        android:id="@+id/tview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <RelativeLayout
+        android:layout_width="380dp"
+        android:layout_height="503dp"
+        tools:layout_editor_absoluteX="4dp"
+        tools:layout_editor_absoluteY="4dp">
 
-    <TextView
-        android:id="@+id/tview2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView"
-        tools:layout_editor_absoluteX="154dp"
-        tools:layout_editor_absoluteY="136dp" />
+        <Switch
+            android:id="@+id/switchActivacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/radioGroup"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:text="Funcionalidades" />
+
+        <TextView
+            android:id="@+id/tviewPuerta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/textView3"
+            android:text="Estado Puerta"
+            android:visibility="visible"
+            tools:layout_editor_absoluteX="138dp"
+            tools:layout_editor_absoluteY="119dp" />
+
+        <TextView
+            android:id="@+id/tviewLed"
+            android:layout_width="305dp"
+            android:layout_height="19dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignTop="@+id/textView"
+            android:layout_marginTop="25dp"
+            android:text="Estado Luz"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.556"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.524" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="Luz:"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/tviewPuerta"
+            android:text="Gente en puerta?"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/tviewLed"
+            android:text="Puerta:"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tviewPresencia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/tviewPuerta"
+            android:layout_marginTop="23dp"
+            android:text="Estado Presencia" />
+
+        <Button
+            android:id="@+id/btnOk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="28dp"
+            android:layout_toEndOf="@+id/textView2"
+            android:layout_toRightOf="@+id/textView2"
+            android:text="OK"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/tViewNotificacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Notificacion"
+            android:textAlignment="textStart"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:visibility="invisible"
+            android:layout_above="@+id/btnOk"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:id="@+id/tviewProx"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="VALOR PROXIMIDAD"
+            app:layout_constraintHorizontal_bias="0.915"
+            app:layout_constraintLeft_toRightOf="@+id/tviewLed"
+            app:layout_constraintRight_toRightOf="parent"
+            tools:layout_editor_absoluteY="241dp"
+            android:layout_above="@+id/tviewLumi"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:id="@+id/tviewLumi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="VALOR LUMI"
+            android:layout_above="@+id/tViewNotificacion"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/tviewProx"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="45dp"
+            android:clickable="false">
+
+            <RadioButton
+                android:id="@+id/rBtnLed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Activar encendido de luz remota" />
+
+            <RadioButton
+                android:id="@+id/rBtnPuerta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="false"
+                android:text="Activar apertura de puerta remota" />
+
+            <RadioButton
+                android:id="@+id/rBtnLuminosidad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Activar luz inteligente" />
+        </RadioGroup>
+
+    </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

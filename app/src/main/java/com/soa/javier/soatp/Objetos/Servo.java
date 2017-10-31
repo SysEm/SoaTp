@@ -5,9 +5,9 @@ package com.soa.javier.soatp.Objetos;
  */
 
 public class Servo {
-    Float angulo, esfuerzo;
+    Integer angulo, esfuerzo;
 
-    public Servo(Float angulo, Float esfuerzo) {
+    public Servo(Integer angulo, Integer esfuerzo) {
         this.angulo = angulo;
         this.esfuerzo = esfuerzo;
     }
@@ -15,19 +15,19 @@ public class Servo {
     public Servo() {
     }
 
-    public Float getAngulo() {
+    public Integer getAngulo() {
         return angulo;
     }
 
-    public void setAngulo(Float angulo) {
+    public void setAngulo(Integer angulo) {
         this.angulo = angulo;
     }
 
-    public Float getEsfuerzo() {
+    public Integer getEsfuerzo() {
         return esfuerzo;
     }
 
-    public void setEsfuerzo(Float esfuerzo) {
+    public void setEsfuerzo(Integer esfuerzo) {
         this.esfuerzo = esfuerzo;
     }
 }
