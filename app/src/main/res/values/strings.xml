@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SoaTp</string>
+    <string name="puertaDesdeRasp">SoaTp</string>
+    <string name="puertaHaciaRasp">SoaTp</string>
 </resources>
