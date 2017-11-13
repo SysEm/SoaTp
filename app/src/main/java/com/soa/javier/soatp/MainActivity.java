@@ -1,5 +1,6 @@
 package com.soa.javier.soatp;
 
+import android.graphics.Region;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -25,13 +26,14 @@ import com.google.firebase.database.ValueEventListener;
 import com.soa.javier.soatp.Objetos.Puerta;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
+    //region VARIABLES
+    //region SENSORES
     SensorManager sm;
     Sensor sensorProx;
     Sensor sensorAcel;
     Sensor sensorLumi;
-
-    Puerta puerta = new Puerta();
-
+    //endregion
+    //region VIEWS
     TextView tviewLed;
     TextView tviewPuerta;
     TextView tviewPresencia;
@@ -40,25 +42,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     RadioButton rBtnLed;
     RadioButton rBtnPuerta;
     RadioButton rBtnLuminosidad;
-
     RadioGroup radioGroup;
     Button btnOk;
-
-
-    //AUXILIARES
+    //endregion
+    //region AUXILIARES
+    Puerta PuertaLecAppEscRas = new Puerta();
+    Puerta PuertaEscAppLecRas = new Puerta();
     TextView tviewProx;
     TextView tviewLumi;
     private static final float SHAKE_THRESHOLD = 2.1f;
     private static final int SHAKE_WAIT_TIME_MS = 500;
     private long mShakeTime = 0;
-
     Vibrator vibrator;
     MediaPlayer mp;
-
-
+    //endregion
+    //region BASE DE DATOS
     FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference baseDatosSoaRef = database.getReference("baseDatosSoa").child("Puerta");
-
+    DatabaseReference baseDatosSoaRef = database.getReference("baseDatosSoa");
+    //endregion
+    //endregion
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,12 +90,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorProx = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         sensorAcel = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorLumi = sm.getDefaultSensor(Sensor.TYPE_LIGHT);
+
         //INSTANCIO SENSORES PARA QUE EMPIECEN A ESCUCHAR.
         sm.registerListener(this, sensorAcel,SensorManager.SENSOR_DELAY_NORMAL);
         sm.registerListener(this, sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
         sm.registerListener(this, sensorLumi,SensorManager.SENSOR_DELAY_NORMAL);
 
-        //ACTIVO O DESACTIVO LAS FUNCIONALIDADES
+        //ACTIVO-DESACTIVO EL MENU DE FUNCIONALIDADES
         switchActivacion = (Switch)findViewById(R.id.switchActivacion);
         switchActivacion.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        //BOTON PARA CANCELAR LA NOTIFICACION DE PUERTA FORZADA
         btnOk = (Button)findViewById(R.id.btnOk);
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,13 +126,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        //VARIABLES AUXILIARES. EL VIBRATOR NECESITO DECLARAR EL PERMISO EN EL MANIFEST YA QUE CONTROLA HARDWARE
         vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
         mp = MediaPlayer.create(MainActivity.this,R.raw.alarma);
         tviewProx = (TextView)findViewById(R.id.tviewProx);
         tviewLumi = (TextView)findViewById(R.id.tviewLumi);
     }
-
-
 
     @Override
     protected void onStart() {
@@ -142,29 +145,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     //SI SE PRODUCE ALGUN CAMBIO EN LA RUTA ESPECIFICADA CUANDO INSTANCIE EN LA BBDD
                     try {
-                        String estadoLed = dataSnapshot.child("Led").child("estado").getValue().toString();
-                        String estadoPresencia = dataSnapshot.child("Presencia").child("estado").getValue().toString();
-                        Integer anguloServo = Integer.parseInt(dataSnapshot.child("Servo").child("angulo").getValue().toString());
-                        Integer esfuerzoServo = Integer.parseInt(dataSnapshot.child("Servo").child("esfuerzo").getValue().toString());
+                        String estadoLed = dataSnapshot.child("PuertaLecAppEscRas").child("Led").child("estado").getValue().toString();
+                        String estadoPresencia = dataSnapshot.child("PuertaLecAppEscRas").child("Presencia").child("estado").getValue().toString();
+                        Integer anguloServo = Integer.parseInt(dataSnapshot.child("PuertaLecAppEscRas").child("Servo").child("angulo").getValue().toString());
+                        Integer esfuerzoServo = Integer.parseInt(dataSnapshot.child("PuertaLecAppEscRas").child("Servo").child("esfuerzo").getValue().toString());
 
-                        puerta.setPuerta(estadoLed, estadoPresencia, anguloServo, esfuerzoServo);
+                        PuertaLecAppEscRas.setPuerta(estadoLed, estadoPresencia, anguloServo, esfuerzoServo);
                         //SETEO LA INFORMACION DE LA PUERTA
-                        tviewLed.setText(puerta.getLed().getEstado());
+                        if(PuertaLecAppEscRas.getLed().getEstado().equals("on")){
+                            tviewLed.setText("Encendida");
+                        }else{
+                            tviewLed.setText("Apagada");
+                        }
 
-                        if(puerta.getServo().getAngulo().toString().equals("0")){
+                        if(PuertaLecAppEscRas.getServo().getAngulo().toString().equals("0")){
                             tviewPuerta.setText("Cerrada");
                         }else{
                             tviewPuerta.setText("Abierta");
                         }
 
-                        if(puerta.getPresencia().getEstado().equals("on")){
+                        if(PuertaLecAppEscRas.getPresencia().getEstado().equals("on")){
                             tviewPresencia.setText("Si");
                         }else{
                             tviewPresencia.setText("No");
                         }
 
                         //SI SE ACTIVA QUE ESTA FORZANDOSE LA PUERTA, ACTIVO LA NOTIFICACION EN LA APP
-                        if(puerta.getServo().getEsfuerzo() == 1){
+                        if(PuertaLecAppEscRas.getServo().getEsfuerzo() == 1){
                             tViewNotificacion.setText("PRECAUCION, PUERTA FORZADA!!!");
                             tViewNotificacion.setVisibility(View.VISIBLE);
                             btnOk.setVisibility(View.VISIBLE);
@@ -190,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    //SI UNO DE LOS SENSORES TIENE UN CAMBIO SE EJECUTA ESTO Y DISCRIMINO PORQUE TIPO DE SENSOR FUE
+    //region FUNCIONES DE CAMBIO DE ESTADO DE SENSORES
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
             if(sensorEvent.sensor.getType()== Sensor.TYPE_ACCELEROMETER){
@@ -216,17 +223,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int i) {
 
     }
+    //endregion
 
+    //region FUNCIONES PARA LOS SENSORES
     public  void accionProximidad(SensorEvent sensorEvent){
         String valProximidad = String.valueOf(sensorEvent.values[0]);
         Float valor = Float.parseFloat(valProximidad);
         tviewProx.setText(Float.toString(valor));
 
+        //VALOR ES LO QUE ME DA EL SENSOR ES EL DE PROXIMIDAD
         if(valor == 1){
-            if(puerta.getLed().getEstado().equals("on")){
-                baseDatosSoaRef.child("Led").child("estado").setValue("off");
+            if(PuertaLecAppEscRas.getLed().getEstado().equals("on")){
+                Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE APAGAR LA LUZ", Toast.LENGTH_LONG);
+                toast.show();
+                baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("off");
             }else {
-                baseDatosSoaRef.child("Led").child("estado").setValue("on");
+                Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE ENCENDER LA LUZ", Toast.LENGTH_LONG);
+                toast.show();
+                baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("on");
             }
         }
     }
@@ -237,9 +251,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tviewLumi.setText(Float.toString(valor));
 
         if(valor > 155){
-            baseDatosSoaRef.child("Led").child("estado").setValue("off");
+            Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE APAGAR LA LUZ", Toast.LENGTH_LONG);
+            toast.show();
+            baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("off");
         }else{
-            baseDatosSoaRef.child("Led").child("estado").setValue("on");
+            Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE ENCENDER LA LUZ", Toast.LENGTH_LONG);
+            toast.show();
+            baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("on");
         }
     }
 
@@ -253,33 +271,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float gY = sensorEvent.values[1] / SensorManager.GRAVITY_EARTH;
             float gZ = sensorEvent.values[2] / SensorManager.GRAVITY_EARTH;
 
-            // gForce will be close to 1 when there is no movement
             double gForce = Math.sqrt(gX * gX + gY * gY + gZ * gZ);
 
-            // Change background color if gForce exceeds threshold;
-            // otherwise, reset the color
             if (gForce > SHAKE_THRESHOLD) {
-                Toast toastAux = Toast.makeText(getApplicationContext(), "ANTES: "+puerta.getServo().getAngulo().toString(), Toast.LENGTH_LONG);
-                toastAux.show();
-                Toast toast = Toast.makeText(getApplicationContext(), "DO NOT SHAKE ME", Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(getApplicationContext(), "SHAKE DETECTADO", Toast.LENGTH_LONG);
                 toast.show();
 
-                if(puerta.getServo().getAngulo() == 0){
-                    toast = Toast.makeText(getApplicationContext(), "PASE A 180", Toast.LENGTH_LONG);
+                if(PuertaLecAppEscRas.getServo().getAngulo() == 0){
+                    toast = Toast.makeText(getApplicationContext(), "TRATANDO DE ABRIR", Toast.LENGTH_LONG);
                     toast.show();
-                    baseDatosSoaRef.child("Servo").child("angulo").setValue(180);
+                    baseDatosSoaRef.child("PuertaEscAppLecRas").child("Servo").child("angulo").setValue(1);
                 }
                 else {
-                    toast = Toast.makeText(getApplicationContext(), "PASE A 0", Toast.LENGTH_LONG);
+                    toast = Toast.makeText(getApplicationContext(), "TRATANDO DE CERRAR", Toast.LENGTH_LONG);
                     toast.show();
-                    baseDatosSoaRef.child("Servo").child("angulo").setValue(0);
+                    baseDatosSoaRef.child("PuertaEscAppLecRas").child("Servo").child("angulo").setValue(0);
                 }
             }
         }
 
     }
+    //endregion
 
-
+    //region OVERRIDE DE LOS ESTADOS DE LA APP
     @Override
     protected void onResume() {
         super.onResume();
@@ -300,14 +314,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onStop() {
         super.onStop();
         Log.i("LOG:", "ESTOY EN STOP");
-        sm.unregisterListener(this);
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
         Log.i("LOG:", "ESTOY EN RESTART");
-        sm.unregisterListener(this);
     }
 
     @Override
@@ -316,5 +328,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Log.i("LOG:", "ESTOY EN DESTROY");
         sm.unregisterListener(this);
     }
-
+    //endregion
 }
