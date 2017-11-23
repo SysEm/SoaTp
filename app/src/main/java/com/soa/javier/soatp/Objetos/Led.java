@@ -21,4 +21,6 @@ public class Led {
     public void setEstado(String estado) {
         this.estado = estado;
     }
+
+
 }

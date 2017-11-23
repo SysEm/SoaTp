@@ -1,11 +1,11 @@
 package com.soa.javier.soatp;
 
-import android.graphics.Region;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -48,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //region AUXILIARES
     Puerta PuertaLecAppEscRas = new Puerta();
     Puerta PuertaEscAppLecRas = new Puerta();
+
+
+    String estadoPeticionLed;
     TextView tviewProx;
     TextView tviewLumi;
     private static final float SHAKE_THRESHOLD = 2.1f;
@@ -92,9 +95,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorLumi = sm.getDefaultSensor(Sensor.TYPE_LIGHT);
 
         //INSTANCIO SENSORES PARA QUE EMPIECEN A ESCUCHAR.
-        sm.registerListener(this, sensorAcel,SensorManager.SENSOR_DELAY_NORMAL);
-        sm.registerListener(this, sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
-        sm.registerListener(this, sensorLumi,SensorManager.SENSOR_DELAY_NORMAL);
+        activarSensores();
 
         //ACTIVO-DESACTIVO EL MENU DE FUNCIONALIDADES
         switchActivacion = (Switch)findViewById(R.id.switchActivacion);
@@ -145,6 +146,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     //SI SE PRODUCE ALGUN CAMBIO EN LA RUTA ESPECIFICADA CUANDO INSTANCIE EN LA BBDD
                     try {
+                        estadoPeticionLed = dataSnapshot.child("PuertaEscAppLecRas").child("Led").child("estado").getValue().toString();
+
                         String estadoLed = dataSnapshot.child("PuertaLecAppEscRas").child("Led").child("estado").getValue().toString();
                         String estadoPresencia = dataSnapshot.child("PuertaLecAppEscRas").child("Presencia").child("estado").getValue().toString();
                         Integer anguloServo = Integer.parseInt(dataSnapshot.child("PuertaLecAppEscRas").child("Servo").child("angulo").getValue().toString());
@@ -233,15 +236,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         //VALOR ES LO QUE ME DA EL SENSOR ES EL DE PROXIMIDAD
         if(valor == 1){
+            sm.unregisterListener(this);
             if(PuertaLecAppEscRas.getLed().getEstado().equals("on")){
                 Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE APAGAR LA LUZ", Toast.LENGTH_LONG);
                 toast.show();
                 baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("off");
+                PuertaEscAppLecRas.setLed("off");
             }else {
                 Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE ENCENDER LA LUZ", Toast.LENGTH_LONG);
                 toast.show();
                 baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("on");
+                PuertaEscAppLecRas.setLed("on");
             }
+            TareaLed tareaLed = new TareaLed();
+            tareaLed.execute();
         }
     }
 
@@ -250,14 +258,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Float valor = Float.parseFloat(valLuminosidad);
         tviewLumi.setText(Float.toString(valor));
 
-        if(valor > 155){
-            Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE APAGAR LA LUZ", Toast.LENGTH_LONG);
-            toast.show();
-            baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("off");
+        if(valor > 150){
+            if(PuertaLecAppEscRas.getLed().getEstado().equals("on")){
+                sm.unregisterListener(this);
+                Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE APAGAR LA LUZ", Toast.LENGTH_LONG);
+                toast.show();
+                baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("off");
+                PuertaEscAppLecRas.setLed("off");
+                TareaLed tareaLed = new TareaLed();
+                tareaLed.execute();
+            }
+
         }else{
-            Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE ENCENDER LA LUZ", Toast.LENGTH_LONG);
-            toast.show();
-            baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("on");
+            if(PuertaLecAppEscRas.getLed().getEstado().equals("off")){
+                sm.unregisterListener(this);
+                Toast toast = Toast.makeText(getApplicationContext(), "TRATANDO DE ENCENDER LA LUZ", Toast.LENGTH_LONG);
+                toast.show();
+                baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue("on");
+                PuertaEscAppLecRas.setLed("on");
+                TareaLed tareaLed = new TareaLed();
+                tareaLed.execute();
+            }
+
         }
     }
 
@@ -274,19 +296,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double gForce = Math.sqrt(gX * gX + gY * gY + gZ * gZ);
 
             if (gForce > SHAKE_THRESHOLD) {
-                Toast toast = Toast.makeText(getApplicationContext(), "SHAKE DETECTADO", Toast.LENGTH_LONG);
+                sm.unregisterListener(this);
+                Toast toast = Toast.makeText(getApplicationContext(), "SHAKE DETECTADO", Toast.LENGTH_SHORT);
                 toast.show();
 
                 if(PuertaLecAppEscRas.getServo().getAngulo() == 0){
                     toast = Toast.makeText(getApplicationContext(), "TRATANDO DE ABRIR", Toast.LENGTH_LONG);
                     toast.show();
                     baseDatosSoaRef.child("PuertaEscAppLecRas").child("Servo").child("angulo").setValue(1);
+                    PuertaEscAppLecRas.setServo(1,0);
                 }
                 else {
                     toast = Toast.makeText(getApplicationContext(), "TRATANDO DE CERRAR", Toast.LENGTH_LONG);
                     toast.show();
                     baseDatosSoaRef.child("PuertaEscAppLecRas").child("Servo").child("angulo").setValue(0);
+                    PuertaEscAppLecRas.setServo(0,0);
                 }
+                TareaServo tareaServo = new TareaServo();
+                tareaServo.execute();
             }
         }
 
@@ -298,9 +325,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
         Log.i("LOG:", "ESTOY EN RESUME");
-        sm.registerListener(this, sensorProx, SensorManager.SENSOR_DELAY_NORMAL);
-        sm.registerListener(this, sensorAcel, SensorManager.SENSOR_DELAY_NORMAL);
-        sm.registerListener(this, sensorLumi, SensorManager.SENSOR_DELAY_NORMAL);
+        activarSensores();
     }
 
     @Override
@@ -329,4 +354,67 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sm.unregisterListener(this);
     }
     //endregion
+
+    public void activarSensores(){
+        sm.registerListener(this, sensorProx, SensorManager.SENSOR_DELAY_NORMAL);
+        sm.registerListener(this, sensorAcel, SensorManager.SENSOR_DELAY_NORMAL);
+        sm.registerListener(this, sensorLumi, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    private class TareaLed extends AsyncTask<Void,Void,Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            Log.i("ASYNC","Inicie");
+            Long despues = System.currentTimeMillis()+5000;
+            while(System.currentTimeMillis()<=despues){
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if(PuertaEscAppLecRas.getLed().getEstado().equals(PuertaLecAppEscRas.getLed().getEstado())){
+                Toast toast = Toast.makeText(MainActivity.this.getBaseContext(),"Accion ejecutada exitosamente",Toast.LENGTH_SHORT);
+                toast.show();
+            }else{
+                Toast toast = Toast.makeText(MainActivity.this.getBaseContext(),"Accion no ejecutada",Toast.LENGTH_SHORT);
+                toast.show();
+                baseDatosSoaRef.child("PuertaEscAppLecRas").child("Led").child("estado").setValue(PuertaLecAppEscRas.getLed().getEstado());
+            }
+            activarSensores();
+            Log.i("ASYNC","Finalice");
+
+        }
+    }
+
+    private class TareaServo extends AsyncTask<Void,Void,Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            Log.i("ASYNC","Inicie");
+            Long despues = System.currentTimeMillis()+5000;
+            while(System.currentTimeMillis()<=despues){
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if(PuertaEscAppLecRas.getServo().getAngulo()==PuertaLecAppEscRas.getServo().getAngulo()){
+                Toast toast = Toast.makeText(MainActivity.this.getBaseContext(),"Accion ejecutada exitosamente",Toast.LENGTH_SHORT);
+                toast.show();
+            }else{
+                Toast toast = Toast.makeText(MainActivity.this.getBaseContext(),"Accion no ejecutada",Toast.LENGTH_SHORT);
+                toast.show();
+                baseDatosSoaRef.child("PuertaEscAppLecRas").child("Servo").child("angulo").setValue(PuertaLecAppEscRas.getServo().getAngulo());
+            }
+            activarSensores();
+            Log.i("ASYNC","Finalice");
+            TareaServo.this.cancel(true);
+            return;
+        }
+    }
 }

@@ -37,23 +37,26 @@ public class Puerta {
         return led;
     }
 
-    public void setLed(Led led) {
-        this.led = led;
+    public void setLed(String estLed) {
+        this.led.setEstado(estLed);
     }
 
     public Presencia getPresencia() {
         return presencia;
     }
 
-    public void setPresencia(Presencia presencia) {
-        this.presencia = presencia;
+    public void setPresencia(String estPresen) {
+        this.presencia.setEstado(estPresen);
     }
 
     public Servo getServo() {
         return servo;
     }
 
-    public void setServo(Servo servo) {
-        this.servo = servo;
+    public void setServo(Integer angServo,Integer esfServo) {
+        this.servo.setAngulo(angServo);
+        this.servo.setEsfuerzo(esfServo);
     }
+
+
 }
